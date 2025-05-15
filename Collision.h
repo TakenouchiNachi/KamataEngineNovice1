@@ -18,3 +18,10 @@ inline Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
     t = fmaxf(0.0f, fminf(1.0f, t));
     return Add(segment.origin, Multiply(segment.diff, t));
 }
+
+inline bool SphereVsSphere(const Vector3& centerA, float radiusA, const Vector3& centerB, float radiusB) {
+    Vector3 diff = Subtract(centerA, centerB);
+    float distSq = Dot(diff, diff);
+    float radiusSum = radiusA + radiusB;
+    return distSq <= (radiusSum * radiusSum);
+}

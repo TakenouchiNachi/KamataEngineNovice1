@@ -19,6 +19,11 @@ Matrix4x4 Camera::GetViewMatrix() const {
 
 //　マウス操作でカメラを操作できるようにする（BlenderやUnity参考に）
 void Camera::CameraControl() {
+
+    // ImGui操作中なら無視
+    if (ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered()) {
+        return;
+    }
     // === ホイールで前後移動 ===
     int wheel = Novice::GetWheel();
     if (wheel != 0) {
