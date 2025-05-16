@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Math.h"
 
 struct Segment {
@@ -24,4 +24,16 @@ inline bool SphereVsSphere(const Vector3& centerA, float radiusA, const Vector3&
     float distSq = Dot(diff, diff);
     float radiusSum = radiusA + radiusB;
     return distSq <= (radiusSum * radiusSum);
+}
+
+inline bool SphereVsPlane(const Vector3& sphereCenter, float sphereRadius, const Vector3& planePoint, Vector3 planeNormal) {
+    // 正規化
+    float len = sqrtf(Dot(planeNormal, planeNormal));
+    if (len != 0.0f) {
+        planeNormal = Multiply(planeNormal, 1.0f / len);
+    }
+
+    Vector3 centerToPlane = Subtract(sphereCenter, planePoint);
+    float distance = Dot(centerToPlane, planeNormal);
+    return fabsf(distance) <= sphereRadius;
 }

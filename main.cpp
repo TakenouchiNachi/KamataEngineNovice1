@@ -17,7 +17,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     Grid grid;
     Sphere sphereA;
-    Sphere sphereB;
     Camera camera;
     RenderContext renderContext;
 
@@ -25,30 +24,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         camera.Update();
         grid.Update();
         sphereA.Update();
-        sphereB.Update();
         renderContext.Update(camera, 1280.0f, 720.0f);
     };
 
     //球の位置を初期化
     sphereA.transform.position = { 0,0,5 };
     sphereA.radius = 1.0f;
-    sphereB.transform.position = { 2,0,7 };
-    sphereB.radius = 1.5f;
-
 
     while (Novice::ProcessMessage() == 0) {
         Novice::BeginFrame();
         memcpy(preKeys, keys, 256);
         Novice::GetHitKeyStateAll(keys);
 
-        sphereA.isColliding = SphereVsSphere(sphereA.transform.position,sphereA.radius, sphereB.transform.position,sphereB.radius);
-        sphereB.isColliding = sphereA.isColliding;
         Update();
 
+        sphereA.isColliding = SphereVsPlane(sphereA.transform.position, sphereA.radius, grid.planePoint, grid.planeNormal);
 
         grid.Draw(renderContext.view, renderContext.proj, renderContext.vp);
         sphereA.Draw(renderContext.view, renderContext.proj, renderContext.vp);
-        sphereB.Draw(renderContext.view, renderContext.proj, renderContext.vp);
 
         camera.ShowImGuiUI();
         sphereA.ShowImGuiUI();
