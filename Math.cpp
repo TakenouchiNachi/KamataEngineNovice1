@@ -1,4 +1,4 @@
-#include "Math.h"
+﻿#include "Math.h"
 #include <cmath>
 
 float Dot(const Vector3& a, const Vector3& b) {
@@ -18,12 +18,13 @@ Vector3 Multiply(const Vector3& v, float scalar) {
 }
 
 Vector3 TransformVector(const Vector3& v, const Matrix4x4& m) {
+    float x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];
+    float y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1];
+    float z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + m.m[3][2];
     float w = v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + m.m[3][3];
-    return {
-        (v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0]) / w,
-        (v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1]) / w,
-        (v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + m.m[3][2]) / w
-    };
+
+    if (w == 0.0f) w = 1.0f; // 念のため
+    return { x / w, y / w, z / w };
 }
 
 Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b) {
