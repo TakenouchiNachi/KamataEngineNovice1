@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Math.h"
 #include "Cube.h"
+#include "Sphere.h"
 
 struct Segment {
     Vector3 origin;

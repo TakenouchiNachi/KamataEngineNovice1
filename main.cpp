@@ -39,7 +39,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     // === オブジェクトの初期化
     cubeA.position = { -1, 0, 0 };
     sphere.transform.position = { 0, 0, 0 };
-    sphere.radius = 0.5f;
+    sphere.radius = 1.0f;
 
     auto Update = [&]() {
         camera.Update();
@@ -72,16 +72,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // === 当たり判定
 
         // === 描画行列（線・点描画用：単位モデル）
-        Matrix4x4 identityMVP = renderContext.GetMVP(
-            MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
-
-        Matrix4x4 mvp = renderContext.GetMVP(MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
+        Matrix4x4 cubeModel = MakeAffineMatrix(cubeA.size, { 0,0,0 }, cubeA.position);        Matrix4x4 mvp = renderContext.GetMVP(cubeModel);
+        cubeA.Draw(mvp, isHit ? 0xFF0000FF : 0xFFFFFFFF);
+        sphere.Draw(renderContext);
 
         // === ImGui UI
         ImGui::Begin("Cube A");
         cubeA.ShowImGuiUI();
         ImGui::End();
 
+        ImGui::Begin("Sphere A");
+        sphere.ShowImGuiUI();
+        ImGui::End();
 
         Novice::EndFrame();
         if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0) break;

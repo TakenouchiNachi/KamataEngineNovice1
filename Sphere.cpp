@@ -16,15 +16,20 @@ void Sphere::ShowImGuiUI() {
     ImGui::End();
 }
 
-void Sphere::Draw(const Matrix4x4& view, const Matrix4x4& proj, const Matrix4x4& vp) const {
-    Matrix4x4 model = transform.GetMatrix();
-    Matrix4x4 mvp = Multiply(Multiply(Multiply(model, view), proj), vp);
-
+void Sphere::Draw(const RenderContext& ctx) const {
+    // radius を行列でスケーリングに使う
+    Matrix4x4 scale = {
+        radius, 0, 0, 0,
+        0, radius, 0, 0,
+        0, 0, radius, 0,
+        0, 0, 0, 1
+    };
+    Matrix4x4 model = Multiply(scale, transform.GetMatrix());
+    Matrix4x4 mvp = ctx.GetMVP(model);
     int latCount = 10;
     int lonCount = 20;
+    unsigned int color = isColliding ? 0xFF0000FF : 0xFFFFFFFF;
 
-    unsigned int color = isColliding ? 0xFF0000FF : 0xFFFFFFFF;  // 赤 or 白
-   
     for (int lat = 1; lat < latCount; ++lat) {
         float theta = 3.1415f * lat / latCount;
         for (int lon = 0; lon < lonCount; ++lon) {
@@ -32,14 +37,14 @@ void Sphere::Draw(const Matrix4x4& view, const Matrix4x4& proj, const Matrix4x4&
             float phi2 = 2.0f * 3.1415f * (lon + 1) / lonCount;
 
             Vector3 p1 = {
-                radius* sinf(theta) * cosf(phi1),
-                radius* cosf(theta),
-                radius* sinf(theta) * sinf(phi1)
+                sinf(theta) * cosf(phi1),
+                cosf(theta),
+                sinf(theta) * sinf(phi1)
             };
             Vector3 p2 = {
-                radius* sinf(theta) * cosf(phi2),
-                radius * cosf(theta),
-                radius * sinf(theta) * sinf(phi2)
+                sinf(theta) * cosf(phi2),
+                cosf(theta),
+                sinf(theta) * sinf(phi2)
             };
             Vector3 sp1 = TransformVector(p1, mvp);
             Vector3 sp2 = TransformVector(p2, mvp);
@@ -54,14 +59,14 @@ void Sphere::Draw(const Matrix4x4& view, const Matrix4x4& proj, const Matrix4x4&
             float theta2 = 3.1415f * (lat + 1) / latCount;
 
             Vector3 p1 = {
-                radius * sinf(theta1) * cosf(phi),
-                radius * cosf(theta1),
-                radius * sinf(theta1) * sinf(phi)
+                sinf(theta1) * cosf(phi),
+                cosf(theta1),
+                sinf(theta1) * sinf(phi)
             };
             Vector3 p2 = {
-                radius * sinf(theta2) * cosf(phi),
-                radius * cosf(theta2),
-                radius * sinf(theta2) * sinf(phi)
+                sinf(theta2) * cosf(phi),
+                cosf(theta2),
+                sinf(theta2) * sinf(phi)
             };
             Vector3 sp1 = TransformVector(p1, mvp);
             Vector3 sp2 = TransformVector(p2, mvp);

@@ -1,6 +1,7 @@
 #pragma once
 #include "Math.h"
 #include"Novice.h"
+#include"RenderContext.h"
 
 class Sphere {
 public:
@@ -11,5 +12,5 @@ public:
     Sphere();
     void Update();
     void ShowImGuiUI();
-    void Draw(const Matrix4x4& view, const Matrix4x4& proj, const Matrix4x4& vp) const;
+    void Draw(const RenderContext& ctx) const;
 };
