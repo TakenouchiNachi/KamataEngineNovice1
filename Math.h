@@ -21,6 +21,10 @@ Vector3 Multiply(const Vector3& v, float scalar);
 
 Vector3 TransformVector(const Vector3& v, const Matrix4x4& m);
 
+Vector3 Cross(const Vector3& a, const Vector3& b);
+
+Vector3 Normalize(const Vector3& v);
+
 Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b);
 
 Matrix4x4 MakeRotateX(float angle);

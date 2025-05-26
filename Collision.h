@@ -51,3 +51,47 @@ inline bool SegmentVsPlane(const Segment& segment, const Vector3& planePoint, co
 
     return true;
 }
+
+inline bool SegmentVsTriangle_CrossMethod(
+    const Segment& segment,
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& v2,
+    Vector3* outIntersection = nullptr
+) {
+    // 平面法線
+    Vector3 edge1 = Subtract(v1, v0);
+    Vector3 edge2 = Subtract(v2, v0);
+    Vector3 normal = Normalize(Cross(edge1, edge2));
+
+    // 平面との交点を求める（SegmentVsPlaneの一部）
+    float d = Dot(segment.diff, normal);
+    if (fabsf(d) < 1e-6f) return false; // 平行
+
+    float t = Dot(Subtract(v0, segment.origin), normal) / d;
+    if (t < 0.0f || t > 1.0f) return false; // 線分の範囲外
+
+    // 交点
+    Vector3 p = Add(segment.origin, Multiply(segment.diff, t));
+    if (outIntersection) *outIntersection = p;
+
+    // 内外判定（クロス積）
+    Vector3 v01 = Subtract(v1, v0);
+    Vector3 v12 = Subtract(v2, v1);
+    Vector3 v20 = Subtract(v0, v2);
+    Vector3 v0p = Subtract(p, v0);
+    Vector3 v1p = Subtract(p, v1);
+    Vector3 v2p = Subtract(p, v2);
+
+    Vector3 c01 = Cross(v01, v1p);
+    Vector3 c12 = Cross(v12, v2p);
+    Vector3 c20 = Cross(v20, v0p);
+
+    if (Dot(c01, normal) >= 0.0f &&
+        Dot(c12, normal) >= 0.0f &&
+        Dot(c20, normal) >= 0.0f) {
+        return true;
+    }
+
+    return false;
+}

@@ -17,6 +17,20 @@ Vector3 Multiply(const Vector3& v, float scalar) {
     return { v.x * scalar, v.y * scalar, v.z * scalar };
 }
 
+Vector3 Cross(const Vector3& a, const Vector3& b) {
+    return {
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+}
+
+Vector3 Normalize(const Vector3& v) {
+    float len = sqrtf(Dot(v, v));
+    if (len == 0.0f) return { 0, 0, 0 };
+    return Multiply(v, 1.0f / len);
+}
+
 Vector3 TransformVector(const Vector3& v, const Matrix4x4& m) {
     float x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];
     float y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1];
