@@ -33,10 +33,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Grid grid;
     Camera camera;
     RenderContext renderContext;
-    Cube cubeA, cubeB;
+    Cube cubeA;
+    Sphere sphere;
 
+    // === オブジェクトの初期化
     cubeA.position = { -1, 0, 0 };
-    cubeB.position = { 1, 0, 0 };
+    sphere.transform.position = { 0, 0, 0 };
+    sphere.radius = 0.5f;
 
     auto Update = [&]() {
         camera.Update();
@@ -57,6 +60,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Update();
 
         // === 判定処理
+        bool isHit = AABBvsSphere(cubeA, sphere);
+        sphere.isColliding = isHit;
 
         // === グリッドの面法線（Transformを反映させる）
         Vector3 localUp = { 0, 1, 0 };
@@ -65,24 +70,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Vector3 planePoint = grid.transform.position;
 
         // === 当たり判定
-        bool isAABBHit = AABBvsAABB(cubeA, cubeB);
 
         // === 描画行列（線・点描画用：単位モデル）
         Matrix4x4 identityMVP = renderContext.GetMVP(
             MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
 
         Matrix4x4 mvp = renderContext.GetMVP(MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
-        cubeA.Draw(mvp, isAABBHit ? 0xFF0000FF : 0xFFFFFFFF);
-        cubeB.Draw(mvp, isAABBHit ? 0xFF0000FF : 0xFFFFFFFF);
 
         // === ImGui UI
         ImGui::Begin("Cube A");
         cubeA.ShowImGuiUI();
         ImGui::End();
 
-        ImGui::Begin("Cube B");
-        cubeB.ShowImGuiUI();
-        ImGui::End();
 
         Novice::EndFrame();
         if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0) break;

@@ -102,3 +102,14 @@ inline bool AABBvsAABB(const Cube& a, const Cube& b) {
         (a.GetMin().y <= b.GetMax().y && a.GetMax().y >= b.GetMin().y) &&
         (a.GetMin().z <= b.GetMax().z && a.GetMax().z >= b.GetMin().z);
 }
+
+inline bool AABBvsSphere(const Cube& cube, const Sphere& sphere) {
+    Vector3 closestPoint = {
+        std::fmax(cube.GetMin().x, std::fmin(sphere.transform.position.x, cube.GetMax().x)),
+        std::fmax(cube.GetMin().y, std::fmin(sphere.transform.position.y, cube.GetMax().y)),
+        std::fmax(cube.GetMin().z, std::fmin(sphere.transform.position.z, cube.GetMax().z))
+    };
+
+    Vector3 diff = Subtract(sphere.transform.position, closestPoint);
+    return Dot(diff, diff) <= (sphere.radius * sphere.radius);
+}
