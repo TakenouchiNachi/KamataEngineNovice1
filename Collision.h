@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Math.h"
+#include "Cube.h"
 
 struct Segment {
     Vector3 origin;
@@ -94,4 +95,10 @@ inline bool SegmentVsTriangle_CrossMethod(
     }
 
     return false;
+}
+
+inline bool AABBvsAABB(const Cube& a, const Cube& b) {
+    return (a.GetMin().x <= b.GetMax().x && a.GetMax().x >= b.GetMin().x) &&
+        (a.GetMin().y <= b.GetMax().y && a.GetMax().y >= b.GetMin().y) &&
+        (a.GetMin().z <= b.GetMax().z && a.GetMax().z >= b.GetMin().z);
 }

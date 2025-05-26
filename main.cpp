@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Sphere.h"
 #include "Grid.h"
+#include "Cube.h"
 #include "Triangle.h"
 #include "RenderContext.h"
 #include <imgui.h>
@@ -32,7 +33,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Grid grid;
     Camera camera;
     RenderContext renderContext;
-    Triangle triangle;
+    Cube cubeA, cubeB;
+
+    cubeA.position = { -1, 0, 0 };
+    cubeB.position = { 1, 0, 0 };
 
     auto Update = [&]() {
         camera.Update();
@@ -45,8 +49,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         { 6.0f, -4.0f, 0.0f }   // diff
     };
 
-    Vector3 intersect;
-
     while (Novice::ProcessMessage() == 0) {
         Novice::BeginFrame();
         memcpy(preKeys, keys, 256);
@@ -55,9 +57,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Update();
 
         // === 判定処理
-        Vector3 v0 = triangle.GetWorldVertex(0);
-        Vector3 v1 = triangle.GetWorldVertex(1);
-        Vector3 v2 = triangle.GetWorldVertex(2);
 
         // === グリッドの面法線（Transformを反映させる）
         Vector3 localUp = { 0, 1, 0 };
@@ -66,35 +65,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Vector3 planePoint = grid.transform.position;
 
         // === 当たり判定
-        bool isHit = SegmentVsTriangle_CrossMethod(segment,
-            triangle.GetWorldVertex(0),
-            triangle.GetWorldVertex(1),
-            triangle.GetWorldVertex(2),
-            &intersect);
+        bool isAABBHit = AABBvsAABB(cubeA, cubeB);
 
         // === 描画行列（線・点描画用：単位モデル）
         Matrix4x4 identityMVP = renderContext.GetMVP(
             MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
 
-        // === 三角形描画（赤：ヒット時）
-        triangle.Draw(renderContext, isHit ? 0xFF0000FF : 0xFFFFFFFF);
-
-        // === 線分描画（常時白）
-        DrawSegment(segment, identityMVP, 0xFFFFFFFF);
-
-        // === 当たっていれば交点を描画
-        if (isHit) {
-            DrawPoint(intersect, identityMVP, 0x00FF00FF);
-        }
+        Matrix4x4 mvp = renderContext.GetMVP(MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
+        cubeA.Draw(mvp, isAABBHit ? 0xFF0000FF : 0xFFFFFFFF);
+        cubeB.Draw(mvp, isAABBHit ? 0xFF0000FF : 0xFFFFFFFF);
 
         // === ImGui UI
-        ImGui::Begin("Triangle");
-        triangle.ShowImGuiUI(); // 内部で position/rotation 操作
+        ImGui::Begin("Cube A");
+        cubeA.ShowImGuiUI();
         ImGui::End();
 
-        ImGui::Begin("Segment");
-        ImGui::DragFloat3("Origin", &segment.origin.x, 0.1f);
-        ImGui::DragFloat3("Diff", &segment.diff.x, 0.1f);
+        ImGui::Begin("Cube B");
+        cubeB.ShowImGuiUI();
         ImGui::End();
 
         Novice::EndFrame();
