@@ -67,7 +67,7 @@ Matrix4x4 MakeAffineMatrix(Vector3 scale, Vector3 rotation, Vector3 translation)
     Matrix4x4 rotX = MakeRotateX(rotation.x);
     Matrix4x4 rotY = MakeRotateY(rotation.y);
     Matrix4x4 rotZ = MakeRotateZ(rotation.z);
-    Matrix4x4 rot = Multiply(Multiply(rotX, rotY), rotZ);
+    Matrix4x4 rot = Multiply(Multiply(rotX, rotY), rotZ); 
 
     Matrix4x4 scaleMat = {
         scale.x, 0, 0, 0,

@@ -37,3 +37,17 @@ inline bool SphereVsPlane(const Vector3& sphereCenter, float sphereRadius, const
     float distance = Dot(centerToPlane, planeNormal);
     return fabsf(distance) <= sphereRadius;
 }
+
+inline bool SegmentVsPlane(const Segment& segment, const Vector3& planePoint, const Vector3& planeNormal, Vector3* outIntersect = nullptr) {
+    float d = Dot(segment.diff, planeNormal);
+    if (fabsf(d) < 1e-6f) return false; // 平行
+
+    float t = Dot(Subtract(planePoint, segment.origin), planeNormal) / d;
+    if (t < 0.0f || t > 1.0f) return false; // 範囲外
+
+    if (outIntersect) {
+        *outIntersect = Add(segment.origin, Multiply(segment.diff, t));
+    }
+
+    return true;
+}

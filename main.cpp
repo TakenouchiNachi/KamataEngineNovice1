@@ -40,9 +40,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         renderContext.Update(camera, 1280.0f, 720.0f);
     };
 
-    //球の位置を初期化
-    sphereA.transform.position = { 0,0,5 };
-    sphereA.radius = 1.0f;
+    Segment segment = {
+        { -3.0f, 2.0f, 0.0f },  // origin
+        { 6.0f, -4.0f, 0.0f }   // diff
+    };
+
+    Vector3 intersect;
 
     while (Novice::ProcessMessage() == 0) {
         Novice::BeginFrame();
@@ -51,14 +54,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         Update();
 
-        sphereA.isColliding = SphereVsPlane(sphereA.transform.position, sphereA.radius, grid.planePoint, grid.planeNormal);
+        // === グリッドの面法線（Transformを反映させる）
+        Vector3 localUp = { 0, 1, 0 };
+        Matrix4x4 model = grid.transform.GetMatrix();
+        Vector3 planeNormal = TransformVector(localUp, model);
+        Vector3 planePoint = grid.transform.position;
 
-        grid.Draw(renderContext.view, renderContext.proj, renderContext.vp);
-        sphereA.Draw(renderContext.view, renderContext.proj, renderContext.vp);
+        // === 当たり判定
+        bool isHit = SegmentVsPlane(segment, planePoint, planeNormal, &intersect);
 
-        camera.ShowImGuiUI();
-        sphereA.ShowImGuiUI();
+        // === 描画
+        grid.Draw(renderContext);
+        Matrix4x4 mvp = renderContext.GetMVP(MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
+        DrawSegment(segment, mvp, isHit ? 0xFF0000FF : 0xFFFFFFFF);
+        if (isHit) {
+            DrawPoint(intersect, mvp, 0x00FF00FF);
+        }
 
+        // === ImGui UI
+        ImGui::Begin("Segment");
+        ImGui::DragFloat3("Origin", &segment.origin.x, 0.1f);
+        ImGui::DragFloat3("Diff", &segment.diff.x, 0.1f);
+        ImGui::End();
+
+        ImGui::Begin("Grid");
+        ImGui::DragFloat3("Position", &grid.transform.position.x, 0.1f);
+        ImGui::DragFloat3("Rotation", &grid.transform.rotation.x, 0.01f);
+        ImGui::End();
         Novice::EndFrame();
         if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0) break;
     }
