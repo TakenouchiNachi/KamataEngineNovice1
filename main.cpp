@@ -60,8 +60,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Update();
 
         // === 判定処理
-        bool isHit = AABBvsSphere(cubeA, sphere);
-        sphere.isColliding = isHit;
+        Vector3 hitPos{};
+        bool isHit = AABBvsSegment(cubeA, segment, &hitPos);
 
         // === グリッドの面法線（Transformを反映させる）
         Vector3 localUp = { 0, 1, 0 };
@@ -72,9 +72,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // === 当たり判定
 
         // === 描画行列（線・点描画用：単位モデル）
-        Matrix4x4 cubeModel = MakeAffineMatrix(cubeA.size, { 0,0,0 }, cubeA.position);        Matrix4x4 mvp = renderContext.GetMVP(cubeModel);
-        cubeA.Draw(mvp, isHit ? 0xFF0000FF : 0xFFFFFFFF);
-        sphere.Draw(renderContext);
+        Matrix4x4 cubeModel = MakeAffineMatrix(cubeA.size, { 0,0,0 }, cubeA.position);
+        Matrix4x4 cubeMVP = renderContext.GetMVP(cubeModel);
+        Matrix4x4 unitMVP = renderContext.GetMVP(MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
+
+        cubeA.Draw(cubeMVP, isHit ? 0xFF0000FF : 0xFFFFFFFF);
+        DrawSegment(segment, unitMVP, 0xFFFFFFFF);
+        if (isHit) DrawPoint(hitPos, unitMVP, 0x00FF00FF);
 
         // === ImGui UI
         ImGui::Begin("Cube A");

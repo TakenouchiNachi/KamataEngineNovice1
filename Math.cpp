@@ -50,6 +50,10 @@ Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b) {
     return result;
 }
 
+Vector3 MultiplyPerElement(const Vector3& a, const Vector3& b) {
+    return { a.x * b.x, a.y * b.y, a.z * b.z };
+}
+
 Matrix4x4 MakeRotateX(float angle) {
     return {
         1, 0, 0, 0,

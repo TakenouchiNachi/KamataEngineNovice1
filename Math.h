@@ -27,6 +27,8 @@ Vector3 Normalize(const Vector3& v);
 
 Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b);
 
+Vector3 MultiplyPerElement(const Vector3& a, const Vector3& b);
+
 Matrix4x4 MakeRotateX(float angle);
 
 Matrix4x4 MakeRotateY(float angle);

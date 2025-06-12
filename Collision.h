@@ -114,3 +114,28 @@ inline bool AABBvsSphere(const Cube& cube, const Sphere& sphere) {
     Vector3 diff = Subtract(sphere.transform.position, closestPoint);
     return Dot(diff, diff) <= (sphere.radius * sphere.radius);
 }
+
+inline bool AABBvsSegment(const Cube& cube, const Segment& segment, Vector3* outHit = nullptr) {
+    Vector3 dir = segment.diff;
+    Vector3 invDir = {
+        dir.x != 0.0f ? 1.0f / dir.x : FLT_MAX,
+        dir.y != 0.0f ? 1.0f / dir.y : FLT_MAX,
+        dir.z != 0.0f ? 1.0f / dir.z : FLT_MAX
+    };
+
+    Vector3 t1 = MultiplyPerElement(Subtract(cube.GetMin(), segment.origin), invDir);
+    Vector3 t2 = MultiplyPerElement(Subtract(cube.GetMax(), segment.origin), invDir);
+
+    Vector3 tmin = { fminf(t1.x, t2.x), fminf(t1.y, t2.y), fminf(t1.z, t2.z) };
+    Vector3 tmax = { fmaxf(t1.x, t2.x), fmaxf(t1.y, t2.y), fmaxf(t1.z, t2.z) };
+
+    float tNear = fmaxf(fmaxf(tmin.x, tmin.y), tmin.z);
+    float tFar = fminf(fminf(tmax.x, tmax.y), tmax.z);
+
+    if (tNear > tFar || tFar < 0.0f || tNear > 1.0f) return false;
+
+    if (outHit) {
+        *outHit = Add(segment.origin, Multiply(segment.diff, fmaxf(0.0f, tNear)));
+    }
+    return true;
+}
