@@ -1,56 +1,62 @@
 #include <Novice.h>
 #include "Math.h"
-#include "Collision.h"
-#include "DebugUI.h"
 #include "Camera.h"
-#include "Sphere.h"
-#include "Grid.h"
-#include "Cube.h"
-#include "Triangle.h"
 #include "RenderContext.h"
 #include <imgui.h>
+#include <string>
+#include "Grid.h"
 
 const char kWindowTitle[] = "LC1A_15_タケノウチ_ナチ_タイトル";
 
-void DrawSegment(const Segment& segment, const Matrix4x4& mvp, unsigned int color) {
-    Vector3 start = segment.origin;
-    Vector3 end = Add(segment.origin, segment.diff);
-    Vector3 s = TransformVector(start, mvp);
-    Vector3 e = TransformVector(end, mvp);
-    Novice::DrawLine((int)s.x, (int)s.y, (int)e.x, (int)e.y, color);
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+    return Add(v1, Multiply(Subtract(v2, v1), t));
 }
 
-void DrawPoint(const Vector3& point, const Matrix4x4& mvp, unsigned int color) {
-    Vector3 screen = TransformVector(point, mvp);
-    Novice::DrawBox((int)screen.x - 2, (int)screen.y - 2, 4, 4, 0.0f, color, kFillModeSolid);
+void DrawBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Matrix4x4& vp, uint32_t color) {
+    const int resolution = 32;
+    for (int i = 0; i < resolution; ++i) {
+        float t1 = (float)i / resolution;
+        float t2 = (float)(i + 1) / resolution;
+
+        Vector3 a1 = Lerp(p0, p1, t1);
+        Vector3 a2 = Lerp(p1, p2, t1);
+        Vector3 point1 = Lerp(a1, a2, t1);
+
+        Vector3 b1 = Lerp(p0, p1, t2);
+        Vector3 b2 = Lerp(p1, p2, t2);
+        Vector3 point2 = Lerp(b1, b2, t2);
+
+        Vector3 sp1 = TransformVector(point1, vp);
+        Vector3 sp2 = TransformVector(point2, vp);
+
+        Novice::DrawLine((int)sp1.x, (int)sp1.y, (int)sp2.x, (int)sp2.y, color);
+    }
+}
+
+void DrawSphereMarker(const Vector3& worldPos, const Matrix4x4& vp, uint32_t color) {
+    Vector3 screen = TransformVector(worldPos, vp);
+    Novice::DrawEllipse((int)screen.x, (int)screen.y, 5, 5, 0.0f, color, kFillModeSolid);
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Novice::Initialize(kWindowTitle, 1280, 720);
-    char keys[256] = { 0 };
-    char preKeys[256] = { 0 };
+    char keys[256] = {}, preKeys[256] = {};
 
-    Grid grid;
     Camera camera;
     RenderContext renderContext;
-    Cube cubeA;
-    Sphere sphere;
+    Grid grid;
 
-    // === オブジェクトの初期化
-    cubeA.position = { -1, 0, 0 };
-    sphere.transform.position = { 0, 0, 0 };
-    sphere.radius = 1.0f;
+    Vector3 controlPoints[3] = {
+        {-0.8f, 0.58f, 1.0f},
+        {1.76f, 1.0f, -0.3f},
+        {0.94f, -0.7f, 2.3f},
+    };
 
-    auto Update = [&]() {
+    auto Update = [&] {
         camera.Update();
-        grid.Update();
         renderContext.Update(camera, 1280.0f, 720.0f);
-    };
-
-    Segment segment = {
-        { -3.0f, 2.0f, 0.0f },  // origin
-        { 6.0f, -4.0f, 0.0f }   // diff
-    };
+        grid.Update();
+        };
 
     while (Novice::ProcessMessage() == 0) {
         Novice::BeginFrame();
@@ -58,35 +64,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Novice::GetHitKeyStateAll(keys);
 
         Update();
+        Matrix4x4 vp = renderContext.vp;
 
-        // === 判定処理
-        Vector3 hitPos{};
-        bool isHit = AABBvsSegment(cubeA, segment, &hitPos);
+        // ベジェ曲線
+        DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], vp, 0xFFFFFFFF);
 
-        // === グリッドの面法線（Transformを反映させる）
-        Vector3 localUp = { 0, 1, 0 };
-        Matrix4x4 model = grid.transform.GetMatrix();
-        Vector3 planeNormal = TransformVector(localUp, model);
-        Vector3 planePoint = grid.transform.position;
-
-        // === 当たり判定
-
-        // === 描画行列（線・点描画用：単位モデル）
-        Matrix4x4 cubeModel = MakeAffineMatrix(cubeA.size, { 0,0,0 }, cubeA.position);
-        Matrix4x4 cubeMVP = renderContext.GetMVP(cubeModel);
-        Matrix4x4 unitMVP = renderContext.GetMVP(MakeAffineMatrix({ 1,1,1 }, { 0,0,0 }, { 0,0,0 }));
-
-        cubeA.Draw(cubeMVP, isHit ? 0xFF0000FF : 0xFFFFFFFF);
-        DrawSegment(segment, unitMVP, 0xFFFFFFFF);
-        if (isHit) DrawPoint(hitPos, unitMVP, 0x00FF00FF);
-
-        // === ImGui UI
-        ImGui::Begin("Cube A");
-        cubeA.ShowImGuiUI();
-        ImGui::End();
-
-        ImGui::Begin("Sphere A");
-        sphere.ShowImGuiUI();
+        // 制御点の描画とUI
+        ImGui::Begin("Control Points");
+        for (int i = 0; i < 3; ++i) {
+            ImGui::DragFloat3(("P" + std::to_string(i)).c_str(), &controlPoints[i].x, 0.01f);
+            DrawSphereMarker(controlPoints[i], vp, 0x000000FF);
+        }
         ImGui::End();
 
         Novice::EndFrame();
