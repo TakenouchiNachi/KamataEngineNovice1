@@ -3,7 +3,8 @@
 
 
 Camera::Camera() {
-    transform.position = { 0, 0, -5 };
+    transform.position = { 0, 7.5f, -5 };
+    transform.rotation = { 0.95f,0,0 };
 }
 
 void Camera::ShowImGuiUI() {

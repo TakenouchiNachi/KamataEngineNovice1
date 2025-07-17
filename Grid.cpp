@@ -1,7 +1,7 @@
 #include "Grid.h"
 
 Grid::Grid() {
-    transform.rotation = { 0.1f, 0.2f, 0.0f };
+    transform.rotation = { 0.0f, 0.0f, 0.0f };
 }
 
 void Grid::Update() {
