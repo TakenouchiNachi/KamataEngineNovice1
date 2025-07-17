@@ -9,14 +9,16 @@ Vector3 ComputeForce(const Spring& spring, const Ball& ball) {
     if (length == 0.0f) return { 0.0f, 0.0f, 0.0f };
 
     Vector3 direction = Normalize(diff);
-    Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
-    Vector3 displacement = ball.position - restPosition;
-    Vector3 restoringForce = -spring.stiffness * displacement;
+    float stretch = length - spring.naturalLength;
+
+    // バネの復元力
+    Vector3 restoringForce = -spring.stiffness * stretch * direction;
+
+    // 減衰力（速度に反比例）
     Vector3 dampingForce = -spring.dampingCoefficient * ball.velocity;
 
     return restoringForce + dampingForce;
 }
-
 void springDrawLine3D(
     const Vector3& p1,
     const Vector3& p2,
