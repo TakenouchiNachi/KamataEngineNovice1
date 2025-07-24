@@ -7,7 +7,15 @@
 #include <imgui.h>
 #include <cmath>
 
-const char kWindowTitle[] = "Uniform Circular Motion";
+const char kWindowTitle[] = "Pendulum Simulation";
+
+struct Pendulum {
+    Vector3 anchor;              // 固定点
+    float length;                // 糸の長さ
+    float angle;                 // 現在の角度
+    float angularVelocity;       // 角速度
+    float angularAcceleration;   // 角加速度
+};
 
 struct Ball {
     Vector3 position;
@@ -23,20 +31,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Camera camera;
     RenderContext renderContext;
 
-    // Ballと描画用Sphere
-    Ball ball{
-        {0.8f, 0.0f, 0.0f}, // 初期位置（X = 半径）
-        0.05f,
-        0x0000FFFF // 青
-    };
-    Sphere ballSphere;
-    ballSphere.radius = ball.radius;
+    // 振り子と初期化
+    Pendulum pendulum{};
+    pendulum.anchor = { 0.0f, 1.0f, 0.0f };
+    pendulum.length = 0.8f;
+    pendulum.angle = 0.7f;
+    pendulum.angularVelocity = 0.0f;
+    pendulum.angularAcceleration = 0.0f;
 
-    // 円運動設定
-    const float angularVelocity = 3.14159f; // π rad/s（2秒で1周）
-    const float radius = 0.8f;
-    float angle = 0.0f;
+    Ball ball{};
+    ball.radius = 0.05f;
+    ball.color = 0xFFFFFFFF;
+    Sphere sphere{};
+    sphere.radius = ball.radius;
 
+    float deltaTime = 1.0f / 60.0f;
     bool isMoving = false;
 
     auto Update = [&]() {
@@ -51,27 +60,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Novice::GetHitKeyStateAll(keys);
 
         Update();
-        float deltaTime = 1.0f / 60.0f;
 
         // UI
-        ImGui::Begin("Spring Simulation");
+        ImGui::Begin("Pendulum");
         if (ImGui::Button("Start")) isMoving = true;
         ImGui::End();
 
-        // 円運動シミュレーション
         if (isMoving) {
-            angle += angularVelocity * deltaTime;
-            if (angle > 2 * 3.14159f) angle -= 2 * 3.14159f;
-            ball.position.x = std::cos(angle) * radius;
-            ball.position.y = std::sin(angle) * radius;
-            ball.position.z = 0.0f; // XY平面上
+            // 加速度の計算（単振り子の公式）
+            pendulum.angularAcceleration = (-9.8f / pendulum.length) * std::sin(pendulum.angle);
+            pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+            pendulum.angle += pendulum.angularVelocity * deltaTime;
         }
+
+        // 球の位置を更新（Z=0平面）
+        ball.position.x = pendulum.anchor.x + std::sin(pendulum.angle) * pendulum.length;
+        ball.position.y = pendulum.anchor.y - std::cos(pendulum.angle) * pendulum.length;
+        ball.position.z = pendulum.anchor.z;
 
         // ===== 描画 =====
         grid.Draw(renderContext.view, renderContext.proj, renderContext.vp);
 
-        ballSphere.transform.position = ball.position;
-        ballSphere.Draw(renderContext.view, renderContext.proj, renderContext.vp);
+        // 球の描画
+        sphere.transform.position = ball.position;
+        sphere.Draw(renderContext.view, renderContext.proj, renderContext.vp);
+
+        // アーム（振り子の糸）描画
+        //Vector3 screenAnchor = TransformCoord(pendulum.anchor, renderContext.vp);
+        //Vector3 screenBall = TransformCoord(ballTransform.position, renderContext.vp);
+
+        //Novice::DrawLine(
+        //    static_cast<int>(screenAnchor.x),
+        //    static_cast<int>(screenAnchor.y),
+        //    static_cast<int>(screenBall.x),
+        //    static_cast<int>(screenBall.y),
+        //    0xFFFFFFFF
+        //);
 
         camera.ShowImGuiUI();
 
