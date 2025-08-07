@@ -112,6 +112,29 @@ inline Vector3 Normalize(const Vector3& v) {
     return v / len;
 }
 
+inline Vector3 TransformCoord(const Vector3& v, const Matrix4x4& m) {
+    float x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];
+    float y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1];
+    float z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + m.m[3][2];
+    float w = v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + m.m[3][3];
+
+    if (w != 0.0f) {
+        x /= w;
+        y /= w;
+        z /= w;
+    }
+
+    return { x, y, z };
+}
+
+inline Vector3 Cross(const Vector3& v1, const Vector3& v2) {
+    return {
+        v1.y * v2.z - v1.z * v2.y,
+        v1.z * v2.x - v1.x * v2.z,
+        v1.x * v2.y - v1.y * v2.x
+    };
+}
+
 struct Transform {
     Vector3 position = { 0, 0, 0 };
     Vector3 rotation = { 0, 0, 0 };

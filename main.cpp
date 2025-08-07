@@ -86,16 +86,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         sphere.Draw(renderContext.view, renderContext.proj, renderContext.vp);
 
         // アーム（振り子の糸）描画
-        //Vector3 screenAnchor = TransformCoord(pendulum.anchor, renderContext.vp);
-        //Vector3 screenBall = TransformCoord(ballTransform.position, renderContext.vp);
-
-        //Novice::DrawLine(
-        //    static_cast<int>(screenAnchor.x),
-        //    static_cast<int>(screenAnchor.y),
-        //    static_cast<int>(screenBall.x),
-        //    static_cast<int>(screenBall.y),
-        //    0xFFFFFFFF
-        //);
+        Vector3 screenAnchor = TransformCoord(pendulum.anchor, renderContext.vp);
+        Vector3 screenBall = TransformCoord(ball.position, renderContext.vp);
+        Novice::DrawLine(
+            static_cast<int>(screenAnchor.x),
+            static_cast<int>(screenAnchor.y),
+            static_cast<int>(screenBall.x),
+            static_cast<int>(screenBall.y),
+            0xFFFFFFFF
+        );
 
         camera.ShowImGuiUI();
 
